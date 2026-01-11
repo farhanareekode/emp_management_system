@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Employee</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #f4f6f9;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: #1f2937;
+            color: #fff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar nav a {
+            display: block;
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar nav a.active,
+        .sidebar nav a:hover {
+            background: #374151;
+            color: #fff;
+        }
+
+        .logout {
+            margin-top: auto;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: #ef4444;
+            color: white;
+            cursor: pointer;
+        }
+
+        .main {
+            flex: 1;
+            padding: 25px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+        }
+
+        .field-block {
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 10px 18px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            background: #16a34a;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+        <h2 class="logo">EMP PANEL</h2>
+        <nav>
+            <a href="profile.html" >Home</a>
+            <a href="form_builder.html">Form Builder</a>
+            <a href="employee_create.html" >Create Employee</a>
+            <a href="employee_list.html">Employee List</a>
+        </nav>
+        <button class="logout" onclick="logout()">Logout</button>
+    </aside>
+
+    <main class="main">
+        <h1>Create Employee</h1>
+
+        <div id="dynamicForm"></div>
+
+        <button onclick="saveEmployee()">Save Employee</button>
+
+        <script src="js/auth.js"></script>
+        <script>
+            const API = "http://localhost:8000/api";
+            let fields = [];
+
+            authFetch(`${API}/form-schema/`)
+                .then(res => res.json())
+                .then(data => {
+                    fields = data.fields || [];
+                    renderForm();
+                });
+
+            function renderForm() {
+                const c = document.getElementById("dynamicForm");
+                c.innerHTML = "";
+
+                fields.forEach(f => {
+                    c.innerHTML += `
+      <div class="field-block">
+        <label>${f.label}</label>
+        <input type="${f.field_type}" id="${f.label}">
+      </div>
+    `;
+                });
+            }
+
+            function saveEmployee() {
+                const data = {};
+
+                fields.forEach(f => {
+                    data[f.label] = document.getElementById(f.label).value;
+                });
+
+                authFetch(`${API}/employees/`, {
+                    method: "POST",
+                    body: JSON.stringify({ form_data: data })
+                }).then(() => {
+                    alert("Employee saved");
+                    location.href = "employee_list.html";
+                });
+            }
+        </script>
+
+
+</body>
+</html>

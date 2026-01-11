@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employees</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #f4f6f9;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 240px;
+            background: #1f2937;
+            color: #fff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar nav a {
+            display: block;
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar nav a.active,
+        .sidebar nav a:hover {
+            background: #374151;
+            color: #fff;
+        }
+
+        .logout {
+            margin-top: auto;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: #ef4444;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* MAIN */
+        .main {
+            flex: 1;
+            padding: 30px;
+        }
+
+        h1 {
+            margin-bottom: 15px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .search {
+            width: 280px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        th {
+            background: #1f2937;
+            color: white;
+            text-align: left;
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f1f5f9;
+        }
+
+        button {
+            padding: 6px 12px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .edit-btn {
+            background: #2563eb;
+            color: white;
+            margin-right: 6px;
+        }
+
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+        <h2 class="logo">EMP PANEL</h2>
+        <nav>
+            <a href="profile.html" >Home</a>
+            <a href="form_builder.html">Form Builder</a>
+            <a href="employee_create.html">Create Employee</a>
+            <a href="employee_list.html" class="active">Employee List</a>
+        </nav>
+        <button class="logout" onclick="logout()">Logout</button>
+    </aside>
+
+    <main class="main">
+
+        <h1>Employees</h1>
+
+        <div class="toolbar">
+            <input
+                    id="searchInput"
+                    class="search"
+                    placeholder="Search employees..."
+                    oninput="applyFilter()">
+        </div>
+
+        <table id="empTable"></table>
+
+    </main>
+
+</div>
+
+<script src="js/auth.js"></script>
+
+<script>
+    const API = "http://localhost:8000/api";
+
+    let schemaFields = [];
+    let allEmployees = [];
+
+    /* LOAD DATA */
+    Promise.all([
+        authFetch(`${API}/form-schema/`).then(r => r.json()),
+        authFetch(`${API}/employees/`).then(r => r.json())
+    ]).then(([schema, employees]) => {
+        schemaFields = schema.fields || [];
+        allEmployees = employees || [];
+        renderTable(allEmployees);
+    });
+
+    /* RENDER TABLE */
+    function renderTable(employees) {
+        const table = document.getElementById("empTable");
+
+        let header = "<tr>";
+        schemaFields.forEach(f => header += `<th>${f.label}</th>`);
+        header += "<th>Actions</th></tr>";
+        table.innerHTML = header;
+
+        employees.forEach(e => {
+            let row = "<tr>";
+
+            schemaFields.forEach(f => {
+                row += `<td>${e.form_data[f.label] || ""}</td>`;
+            });
+
+            row += `
+                <td>
+                    <button class="edit-btn" onclick="editEmp(${e.id})">Edit</button>
+                    <button class="delete-btn" onclick="deleteEmp(${e.id})">Delete</button>
+                </td>
+            </tr>`;
+
+            table.innerHTML += row;
+        });
+    }
+
+    /* SEARCH FILTER */
+    function applyFilter() {
+        const q = document.getElementById("searchInput").value.toLowerCase();
+
+        const filtered = allEmployees.filter(emp =>
+            Object.values(emp.form_data).join(" ").toLowerCase().includes(q)
+        );
+
+        renderTable(filtered);
+    }
+
+    /* ACTIONS */
+    function deleteEmp(id) {
+        if (!confirm("Delete employee?")) return;
+
+        authFetch(`${API}/employees/${id}/delete/`, {
+            method: "DELETE"
+        }).then(() => {
+            allEmployees = allEmployees.filter(e => e.id !== id);
+            applyFilter();
+        });
+    }
+
+    function editEmp(id) {
+        location.href = `employee_edit.html?id=${id}`;
+    }
+
+    function logout() {
+        localStorage.clear();
+        location.href = "index.html";
+    }
+</script>
+
+</body>
+</html>

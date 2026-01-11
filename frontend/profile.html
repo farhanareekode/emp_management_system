@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+        }
+
+        .layout {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 240px;
+            background: #1f2937;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 20px;
+        }
+
+        .sidebar nav a {
+            display: block;
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar nav a:hover,
+        .sidebar nav a.active {
+            background: #374151;
+            color: #fff;
+        }
+
+        .logout {
+            margin-top: auto;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: #ef4444;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* MAIN */
+        .main {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .card h3 {
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .card a {
+            text-decoration: none;
+            color: white;
+            background: #2563eb;
+            padding: 8px 14px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h2 class="logo">EMP PANEL</h2>
+
+        <nav>
+            <a href="form_builder.html">Form Builder</a>
+            <a href="employee_create.html">Create Employee</a>
+            <a href="employee_list.html">Employee List</a>
+            <a href="change_password.html">Change Password</a>
+
+        </nav>
+
+        <button class="logout" onclick="logout()">Logout</button>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+        <header class="topbar">
+            <h1>Admin Dashboard</h1>
+            <span id="user"></span>
+        </header>
+
+        <section class="cards">
+            <div class="card">
+                <h3>Dynamic Form</h3>
+                <p>Edit employee form fields</p>
+                <a href="form_builder.html">Open</a>
+            </div>
+
+            <div class="card">
+                <h3>Create Employee</h3>
+                <p>Add new employee data</p>
+                <a href="employee_create.html">Open</a>
+            </div>
+
+            <div class="card">
+                <h3>Employees</h3>
+                <p>View & edit employees</p>
+                <a href="employee_list.html">Open</a>
+            </div>
+        </section>
+    </main>
+
+</div>
+
+<script>
+    const API = "http://localhost:8000/api";
+    const token = localStorage.getItem("access");
+
+    if (!token) {
+        window.location.href = "index.html";
+    }
+
+    fetch(`${API}/profile/`, {
+        headers: { Authorization: "Bearer " + token }
+    })
+        .then(res => {
+            if (res.status === 401) {
+                localStorage.clear();
+                window.location.href = "index.html";
+            }
+            return res.json();
+        })
+        .then(data => {
+            document.getElementById("user").innerText = data.username;
+        });
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = "index.html";
+    }
+</script>
+
+</body>
+</html>
