@@ -7,7 +7,7 @@ A Django-based employee management system with JWT authentication.
 
 This project has **two parts**:
 - Backend (Django API)
-- Frontend (Static HTML/CSS/JS)
+- Frontend (HTML/CSS/JS)
 
 Both must be running at the same time.
 
